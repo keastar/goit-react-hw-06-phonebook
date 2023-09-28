@@ -1,39 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import css from './Form.module.css';
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact } from 'redux/contactsSlice';
+import { getContacts } from '../../redux/selectors';
 
-export default function Form({ onSubmit }) {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-
-  const handleChange = event => {
-    const { name, value } = event.target;
-
-    switch (name) {
-      case 'name':
-        setName(value);
-        break;
-      case 'number':
-        setNumber(value);
-        break;
-      default:
-        return null;
-    }
-  };
-
-  const resetN = () => {
-    setName('');
-  };
-
-  const resetNu = () => {
-    setNumber('');
-  };
+export default function Form() {
+  const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
 
   const handleSubmit = event => {
     event.preventDefault();
-    onSubmit({ name, number });
-    resetN();
-    resetNu();
+    const form = event.target;
+    const name = form.name.value;
+    const number = form.number.value;
+
+    if (
+      contacts.find(
+        contact => contact.name.toLowerCase() === name.toLowerCase()
+      )
+    ) {
+      return alert('Already exist contact');
+    }
+    dispatch(addContact(name, number));
+    form.reset();
   };
 
   return (
@@ -49,26 +38,14 @@ export default function Form({ onSubmit }) {
             title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
             required
             className={css.label_input}
-            value={name}
-            onChange={handleChange}
           />
         </label>
         <label className={css.label}>
           tel:
-          <input
-            type="tel"
-            name="number"
-            value={number}
-            onChange={handleChange}
-            className={css.label_input}
-          />
+          <input type="tel" name="number" className={css.label_input} />
         </label>
         <button type="submit">Add contact</button>
       </form>
     </>
   );
 }
-
-Form.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
